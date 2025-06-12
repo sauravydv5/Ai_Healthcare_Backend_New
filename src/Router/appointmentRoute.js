@@ -25,6 +25,7 @@ const {
   updateAppointmentStatus,
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
+  getDoctorHistory,
 } = require("../controllers/appointmentController");
 
 // Route for creating an appointment (POST request)
@@ -36,12 +37,8 @@ router.get("/appointments-list", appointmentAuth, getAppointmentsList);
 // Route for getting patient's appointments (GET request)
 router.get("/my-appointments", appointmentAuth, getMyAppointments);
 
-// --- *** THIS IS THE CORRECTED LINE *** ---
-// For updating appointment status, use PUT or PATCH, and include the :id parameter
 router.patch("/updateStatus/:id", appointmentAuth, updateAppointmentStatus);
-// If you specifically want to use POST for updates, it would be:
-// router.post("/updateStatus/:id", appointmentAuth, updateAppointmentStatus);
-// However, PUT is semantically preferred for full resource updates.
+router.get("/history", appointmentAuth, getDoctorHistory);
 
 router.post("/submitdiagnosis", appointmentAuth, submitDiagnosis);
 router.get(

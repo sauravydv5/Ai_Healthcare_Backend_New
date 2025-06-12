@@ -31,35 +31,6 @@ const patientSignup = async (req, res) => {
   }
 };
 
-// const patientLogin = async (req, res) => {
-//   try {
-//     const { identifier, password } = req.body;
-//     // identifier mein email ya username dono aa sakta hai
-
-//     // Patient ko emailId ya username dono mein se match kar ke dhundhna
-//     const patient = await Patient.findOne({
-//       $or: [{ emailId: identifier }, { username: identifier }],
-//     });
-
-//     if (!patient) return res.status(404).json({ message: "Patient not found" });
-
-//     const isMatch = await bcrypt.compare(password, patient.password);
-//     if (!isMatch)
-//       return res.status(401).json({ message: "Invalid credentials" });
-
-//     const token = jwt.sign({ id: patient._id }, process.env.JWT_SECRET, {
-//       expiresIn: "1d",
-//     });
-
-//     res.cookie("token", token, { httpOnly: true });
-//     res.json({ message: "Login successful", token });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// controllers/patientController.js
-
 const patientLogin = async (req, res) => {
   try {
     const { identifier, password } = req.body;
@@ -111,7 +82,7 @@ module.exports = { patientLogin };
 module.exports = { patientLogin };
 const getAppliedDoctors = async (req, res) => {
   try {
-    const doctors = await ApplyDoctor.find().select("-__v -_id");
+    const doctors = await ApplyDoctor.find();
     return res.status(200).json({
       success: true,
       data: doctors,

@@ -5,10 +5,18 @@ const validateSignUpData = (data) => {
 
   if (!firstName || !lastName) {
     throw new Error("Name is not valid!");
-  } else if (!validator.isEmail(emailId)) {
+  } else if (
+    !emailId ||
+    typeof emailId !== "string" ||
+    !validator.isEmail(emailId)
+  ) {
     throw new Error("Email is not valid!");
-  } else if (!validator.isStrongPassword(password)) {
-    throw new Error("Please enter a strong Password!");
+  } else if (
+    !password ||
+    typeof password !== "string" ||
+    !validator.isStrongPassword(password)
+  ) {
+    throw new Error("Please enter a strong password!");
   }
 };
 
@@ -25,7 +33,7 @@ const validateEditDoctorProfileData = (req) => {
     "qualification",
     "consultationFee",
     "languages",
-    "profilePicture",
+    "photoUrl",
     "about",
     "clinicName",
     "daysAvailable",
@@ -47,7 +55,7 @@ const validateEditPatientProfileData = (req) => {
     "address",
     "bloodGroup",
     "medicalHistory",
-    "profilePicture",
+    "photoUrl",
     "emergencyContact",
     "allergies",
   ];
