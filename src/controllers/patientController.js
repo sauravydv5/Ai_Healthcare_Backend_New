@@ -6,7 +6,6 @@ const {
   validateSignUpData,
   validateEditPatientProfileData,
 } = require("../utils/validation");
-const ApplyDoctor = require("../models/applyDocSchema");
 
 const patientSignup = async (req, res) => {
   try {
@@ -31,11 +30,56 @@ const patientSignup = async (req, res) => {
   }
 };
 
+// const patientLogin = async (req, res) => {
+//   try {
+//     const { identifier, password } = req.body;
+
+//     // Match emailId or username
+//     const patient = await Patient.findOne({
+//       $or: [{ emailId: identifier }, { username: identifier }],
+//     });
+
+//     if (!patient) {
+//       return res.status(404).json({ message: "Patient not found" });
+//     }
+
+//     // Compare password
+//     const isMatch = await bcrypt.compare(password, patient.password);
+//     if (!isMatch) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     // Generate JWT token
+//     const token = jwt.sign({ id: patient._id }, process.env.JWT_SECRET, {
+//       expiresIn: "1d",
+//     });
+
+//     res.cookie("token", token, {
+//       httpOnly: true,
+//     });
+
+//     // Respond with token and full patient info
+//     res.status(200).json({
+//       message: "Login successful",
+//       token,
+//       user: {
+//         id: patient._id,
+//         name: patient.firstName,
+//         emailId: patient.emailId,
+//         username: patient.username,
+//         phone: patient.phone,
+//         gender: patient.gender,
+//       },
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// };
 const patientLogin = async (req, res) => {
   try {
     const { identifier, password } = req.body;
 
-    // Match emailId or username
+    // Find patient by email or username
     const patient = await Patient.findOne({
       $or: [{ emailId: identifier }, { username: identifier }],
     });
@@ -44,40 +88,51 @@ const patientLogin = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Compare password
+    // Check password
     const isMatch = await bcrypt.compare(password, patient.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT token
+    // Generate token
     const token = jwt.sign({ id: patient._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
+    // Set HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // for production
+      sameSite: "strict",
     });
 
-    // Respond with token and full patient info
+    // Send response with full patient profile
     res.status(200).json({
       message: "Login successful",
       token,
       user: {
         id: patient._id,
-        name: patient.firstName,
+        firstName: patient.firstName,
+        lastName: patient.lastName,
         emailId: patient.emailId,
         username: patient.username,
         phone: patient.phone,
         gender: patient.gender,
+        age: patient.age,
+        address: patient.address,
+        bloodGroup: patient.bloodGroup,
+        medicalHistory: patient.medicalHistory,
+        emergencyContact: patient.emergencyContact,
+        photoUrl: patient.photoUrl,
+        allergies: patient.allergies,
+        createdAt: patient.createdAt,
+        updatedAt: patient.updatedAt,
       },
     });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
-module.exports = { patientLogin };
 
 module.exports = { patientLogin };
 const getAppliedDoctors = async (req, res) => {
@@ -126,6 +181,36 @@ const viewPatientProfile = async (req, res) => {
 };
 
 //Edit patient profile
+// const editPatientProfile = async (req, res) => {
+//   try {
+//     const patientId = req.patient?._id || req.user?._id;
+
+//     if (!patientId) {
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
+
+//     if (!validateEditPatientProfileData(req)) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Invalid edit fields" });
+//     }
+
+//     const updatedPatient = await Patient.findByIdAndUpdate(
+//       patientId,
+//       { $set: req.body },
+//       { new: true, runValidators: true }
+//     ).select("-password");
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Profile updated successfully",
+//       data: updatedPatient,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 const editPatientProfile = async (req, res) => {
   try {
     const patientId = req.patient?._id || req.user?._id;
@@ -154,6 +239,10 @@ const editPatientProfile = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
+};
+
+module.exports = {
+  editPatientProfile,
 };
 
 module.exports = {

@@ -7,13 +7,19 @@ const Patient = require("../models/patient");
 
 const createAppointment = async (req, res) => {
   try {
-    const { doctor, appointmentDate, appointmentTime, reason, createdBy } =
-      req.body;
+    const {
+      name,
+      doctor,
+      appointmentDate,
+      appointmentTime,
+      reason,
+      createdBy,
+    } = req.body;
 
     const patientId = req.user._id;
 
     // Validate required fields
-    if (!doctor || !appointmentDate || !appointmentTime || !reason) {
+    if (!name || !doctor || !appointmentDate || !appointmentTime || !reason) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required." });
@@ -21,6 +27,7 @@ const createAppointment = async (req, res) => {
 
     // Create new appointment document
     const newAppointment = new Appointment({
+      name: name,
       patient: patientId,
       doctor,
       appointmentDate,
@@ -75,7 +82,7 @@ const getMyAppointments = async (req, res) => {
     const patientId = req.user._id;
 
     const appointments = await Appointment.find({ patient: patientId })
-      .populate("doctor", "firstName emailId speciality phone clinicAddress")
+      .populate("doctor", "name emailId speciality phone clinicAddress")
       .sort({ appointmentDate: -1, appointmentTime: 1 });
 
     res.status(200).json({
@@ -251,6 +258,67 @@ const getDoctorHistory = async (req, res) => {
   }
 };
 
+// routes/appointments.js or routes/feedback.js
+// POST /appointments/feedback
+// const giveFeedback = async (req, res) => {
+//   try {
+//     const { appointmentId, rating, comment } = req.body;
+//     // const patientId = req.patient._id;
+
+//     if (!appointmentId || !rating) {
+//       return res
+//         .status(400)
+//         .json({ message: "Appointment ID and rating are required." });
+//     }
+
+//     const appointment = await Appointment.findById(appointmentId).populate(
+//       "doctor patient"
+//     );
+
+//     if (!appointment) {
+//       return res.status(404).json({ message: "Appointment not found." });
+//     }
+
+//     if (appointment.status !== "accepted") {
+//       return res
+//         .status(400)
+//         .json({ message: "Feedback allowed only for accepted appointments." });
+//     }
+
+//     if (appointment.patient._id.toString() !== patientId.toString()) {
+//       return res.status(403).json({
+//         message: "Unauthorized to leave feedback for this appointment.",
+//       });
+//     }
+
+//     const existingFeedback = await Feedback.findOne({
+//       appointment: appointmentId,
+//     });
+
+//     if (existingFeedback) {
+//       return res
+//         .status(400)
+//         .json({ message: "Feedback already submitted for this appointment." });
+//     }
+
+//     const newFeedback = new Feedback({
+//       appointment: appointment._id,
+//       // doctor: appointment.doctor._id,
+//       // patient: patientId,
+//       rating,
+//       comment,
+//     });
+
+//     await newFeedback.save();
+
+//     return res
+//       .status(201)
+//       .json({ message: "Feedback submitted successfully", data: newFeedback });
+//   } catch (err) {
+//     console.error("Feedback error:", err.message);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// };
 module.exports = {
   createAppointment,
   getAppointmentsList,
@@ -259,4 +327,5 @@ module.exports = {
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
   getDoctorHistory,
+  // giveFeedback,
 };

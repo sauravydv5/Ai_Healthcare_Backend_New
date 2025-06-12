@@ -1,20 +1,3 @@
-// const express = require("express");
-// const router = express.Router();
-// const appointmentAuth = require("../middleware/appointmentAuth");
-// const {
-//   createAppointment,
-//   getAppointmentsList,
-//   getMyAppointments,
-//   updateAppointmentStatus,
-// } = require("../controllers/appointmentController");
-
-// router.post("/appointmentCreate", appointmentAuth, createAppointment);
-// router.get("/appointments-list", appointmentAuth, getAppointmentsList);
-// router.get("/my-appointments", appointmentAuth, getMyAppointments);
-// router.get("/updateStatus", appointmentAuth, updateAppointmentStatus);
-
-// module.exports = router;
-
 const express = require("express");
 const router = express.Router();
 const appointmentAuth = require("../middleware/appointmentAuth"); // Assuming this is your auth middleware
@@ -26,6 +9,7 @@ const {
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
   getDoctorHistory,
+  // giveFeedback,
 } = require("../controllers/appointmentController");
 
 // Route for creating an appointment (POST request)
@@ -39,6 +23,7 @@ router.get("/my-appointments", appointmentAuth, getMyAppointments);
 
 router.patch("/updateStatus/:id", appointmentAuth, updateAppointmentStatus);
 router.get("/history", appointmentAuth, getDoctorHistory);
+// router.get("/feedback", appointmentAuth, giveFeedback);
 
 router.post("/submitdiagnosis", appointmentAuth, submitDiagnosis);
 router.get(
