@@ -1,27 +1,19 @@
+const mongoose = require("mongoose");
 const Appointment = require("../models/appointment");
+const user = require("../models/User");
+const Feedback = require("../models/feedback");
+const Doctor = require("../models/doctorLogin");
+const Patient = require("../models/patient");
 
 const createAppointment = async (req, res) => {
   try {
-    const {
-      name, // patient's name
-      doctor, // doctor ID or object ID
-      appointmentDate,
-      appointmentTime,
-      reason,
-      createdBy,
-    } = req.body;
+    const { doctor, appointmentDate, appointmentTime, reason, createdBy } =
+      req.body;
 
     const patientId = req.user._id;
 
     // Validate required fields
-    if (
-      !doctor ||
-      !appointmentDate ||
-      !appointmentTime ||
-      !reason ||
-      !createdBy ||
-      !name
-    ) {
+    if (!doctor || !appointmentDate || !appointmentTime || !reason) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required." });
@@ -29,13 +21,11 @@ const createAppointment = async (req, res) => {
 
     // Create new appointment document
     const newAppointment = new Appointment({
-      name: name,
       patient: patientId,
       doctor,
       appointmentDate,
       appointmentTime,
       reason,
-      createdBy,
     });
 
     const savedAppointment = await newAppointment.save();
@@ -56,9 +46,12 @@ const createAppointment = async (req, res) => {
 };
 
 const getAppointmentsList = async (req, res) => {
+  // console.log("Doctor from token middleware:", req.user);
+
   try {
     const doctorId = req.user._id;
 
+    // Fetch all appointments for this doctor
     const appointments = await Appointment.find({ doctor: doctorId })
       .populate("patient", "firstName lastName emailId phone")
       .sort({ appointmentDate: 1, appointmentTime: 1 });
@@ -77,13 +70,12 @@ const getAppointmentsList = async (req, res) => {
     });
   }
 };
-
 const getMyAppointments = async (req, res) => {
   try {
     const patientId = req.user._id;
 
     const appointments = await Appointment.find({ patient: patientId })
-      .populate("doctor", "name email speciality phone clinicAddress") // You can modify this
+      .populate("doctor", "firstName emailId speciality phone clinicAddress")
       .sort({ appointmentDate: -1, appointmentTime: 1 });
 
     res.status(200).json({
@@ -203,6 +195,62 @@ const getCompletedAppointmentsWithDiagnosis = async (req, res) => {
   }
 };
 
+const getDoctorHistory = async (req, res) => {
+  try {
+    const doctorId = req.doctor._id;
+
+    // Appointments
+    const totalAppointments = await Appointment.countDocuments({
+      doctor: doctorId,
+    });
+    const acceptedAppointments = await Appointment.countDocuments({
+      doctor: doctorId,
+      status: "accepted",
+    });
+    const rejectedAppointments = await Appointment.countDocuments({
+      doctor: doctorId,
+      status: "rejected",
+    });
+    const diagnosedAppointments = await Appointment.countDocuments({
+      doctor: doctorId,
+      diagnosis: { $exists: true, $ne: null },
+    });
+
+    // Unique patients
+    const uniquePatients = await Appointment.distinct("patient", {
+      doctor: doctorId,
+    });
+
+    // Doctor profile update count (assume it's stored or you track it manually)
+    const doctor = await Doctor.findById(doctorId);
+    const profileUpdates = doctor?.profileUpdateCount || 0;
+
+    // Feedback (optional)
+    const feedbacks = await Feedback.find({ doctor: doctorId }).populate(
+      "patient",
+      "firstName lastName"
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalAppointments,
+        acceptedAppointments,
+        rejectedAppointments,
+        diagnosedAppointments,
+        uniquePatientCount: uniquePatients.length,
+        profileUpdates,
+        feedbacks, // Optional
+      },
+    });
+  } catch (err) {
+    console.error("Doctor history error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch doctor history" });
+  }
+};
+
 module.exports = {
   createAppointment,
   getAppointmentsList,
@@ -210,4 +258,5 @@ module.exports = {
   updateAppointmentStatus,
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
+  getDoctorHistory,
 };

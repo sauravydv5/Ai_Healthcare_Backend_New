@@ -1,29 +1,50 @@
-const Doctor = require("../models/doctor");
+const Doctor = require("../models/doctorLogin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {
   validateSignUpData,
   validateEditDoctorProfileData,
 } = require("../utils/validation");
-const ApplyDoctor = require("../models/applyDocSchema");
 
 const doctorSignup = async (req, res) => {
   try {
     validateSignUpData(req.body);
-    const { firstName, emailId, password } = req.body;
-    const existing = await Doctor.findOne({ emailId });
-    if (existing)
-      return res.status(400).json({ message: "Doctor already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const doctor = await Doctor.create({
-      firstName,
-      emailId,
-      password: hashedPassword,
+    const { firstName, lastName, emailId, password, registrationNumber } =
+      req.body;
+
+    if (!registrationNumber) {
+      return res
+        .status(400)
+        .json({ message: "Registration number is required" });
+    }
+
+    const existing = await Doctor.findOne({
+      $or: [{ emailId }, { registrationNumber }],
     });
 
-    res.status(201).json({ message: "Doctor registered successfully", doctor });
+    if (existing) {
+      return res.status(400).json({ message: "Doctor already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const doctor = await Doctor.create({
+      firstName,
+      lastName,
+      emailId,
+      password: hashedPassword,
+      registrationNumber,
+    });
+
+    const { password: _, ...doctorData } = doctor._doc;
+
+    res.status(201).json({
+      message: "Doctor registered successfully",
+      doctor: doctorData,
+    });
   } catch (err) {
+    console.error("Signup error:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -57,123 +78,6 @@ const doctorLogin = async (req, res) => {
   }
 };
 
-// const applyAsDoctor = async (req, res) => {
-//   try {
-//     const {
-//       name,
-//       email,
-//       registrationNumber,
-//       speciality,
-//       phone,
-//       clinicAddress,
-//       experienceYears,
-//       availableFrom,
-//       availableTo,
-//     } = req.body;
-
-//     const existingApplication = await ApplyDoctor.findOne({
-//       registrationNumber,
-//     });
-
-//     if (existingApplication) {
-//       return res.status(400).json({
-//         success: false,
-//         message:
-//           "An application with this email or registration number already exists.",
-//       });
-//     }
-
-//     // Create new application with status 'Pending'
-//     const newApplication = new ApplyDoctor({
-//       // name,
-//       // email,
-//       registrationNumber,
-//       speciality,
-//       phone,
-//       clinicAddress,
-//       experienceYears,
-//       availableFrom,
-//       availableTo,
-//       status: "Pending",
-//       // picture,
-//     });
-
-//     await newApplication.save();
-
-//     return res.status(201).json({
-//       success: true,
-//       message: "Application submitted successfully",
-//       data: newApplication,
-//     });
-//   } catch (error) {
-//     console.error("Apply As Doctor Error:", error);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Internal Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
-
-const applyAsDoctor = async (req, res) => {
-  try {
-    const {
-      name,
-      email,
-      registrationNumber,
-      speciality,
-      phone,
-      clinicAddress,
-      experienceYears,
-      availableFrom,
-      availableTo,
-    } = req.body;
-
-    const existingApplication = await ApplyDoctor.findOne({
-      registrationNumber,
-    });
-
-    if (existingApplication) {
-      return res.status(400).json({
-        success: false,
-        message: "An application with this registration number already exists.",
-      });
-    }
-
-    const newApplication = new ApplyDoctor({
-      name,
-      email,
-      registrationNumber,
-      speciality,
-      phone,
-      clinicAddress,
-      experienceYears,
-      availableFrom,
-      availableTo,
-      status: "Pending",
-      createdBy: email,
-    });
-
-    if (req.file) {
-      newApplication.picture = req.file.filename; // Assuming multer used
-    }
-
-    await newApplication.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Application submitted successfully",
-      data: newApplication,
-    });
-  } catch (error) {
-    console.error("Doctor Application Error:", error.message);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
-  }
-};
-
 const doctorLogout = (req, res) => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
@@ -197,12 +101,14 @@ const viewProfile = async (req, res) => {
   }
 };
 
-//EditProfile view
 const editProfile = async (req, res) => {
   try {
-    const doctor = req.doctor;
+    const doctor = req.doctor; // Assumes middleware has attached doctor from auth
+
     if (!doctor) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized access." });
     }
 
     const allowedFields = [
@@ -216,8 +122,9 @@ const editProfile = async (req, res) => {
       "availableTo",
     ];
 
+    // Update only allowed fields
     allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
         doctor[field] = req.body[field];
       }
     });
@@ -231,15 +138,71 @@ const editProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in editProfile:", error);
-    return res.status(400).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while updating the profile.",
+      error: error.message,
+    });
   }
 };
+
+const updateDoctorProfile = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+    const jwt = require("jsonwebtoken");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "AiDoctor$!23");
+
+    const doctorId = decoded.id;
+
+    const {
+      name,
+      phone,
+      speciality,
+      clinicAddress,
+      experienceYears,
+      availableFrom,
+      availableTo,
+    } = req.body;
+
+    const updatedDoctor = await Doctor.findByIdAndUpdate(
+      doctorId,
+      {
+        firstName: name,
+        phone,
+        speciality,
+        clinicAddress,
+        experienceYears,
+        availableFrom,
+        availableTo,
+      },
+      { new: true }
+    );
+
+    if (!updatedDoctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      doctor: updatedDoctor,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { updateDoctorProfile };
+
 // 👇 Export everything at once
 module.exports = {
   doctorSignup,
   doctorLogin,
-  applyAsDoctor,
+
   doctorLogout,
   viewProfile,
   editProfile,
+  updateDoctorProfile,
 };

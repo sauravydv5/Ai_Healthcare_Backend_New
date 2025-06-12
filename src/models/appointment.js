@@ -2,16 +2,17 @@ const mongoose = require("mongoose");
 
 const appointmentSchema = new mongoose.Schema(
   {
-    patient: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
-    },
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
       required: true,
     },
+    patient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
     appointmentDate: {
       type: Date,
       required: true,
@@ -41,8 +42,8 @@ const appointmentSchema = new mongoose.Schema(
     },
     createdBy: {
       type: String, // ✅ Now accepts "Patient", "Doctor", "Admin", etc.
-      required: true,
-      trim: true,
+      // required: true,
+      // trim: true,
     },
   },
   {

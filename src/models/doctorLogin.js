@@ -21,9 +21,8 @@ const Speciality = Object.freeze({
 
 const doctorSchema = new mongoose.Schema(
   {
-    registrationNumber: {
-      type: String,
-    },
+    // Basic Details
+
     firstName: {
       type: String,
       required: true,
@@ -33,6 +32,8 @@ const doctorSchema = new mongoose.Schema(
     lastName: {
       type: String,
     },
+
+    // Authentication
     emailId: {
       type: String,
       required: true,
@@ -41,7 +42,7 @@ const doctorSchema = new mongoose.Schema(
       trim: true,
       validate(value) {
         if (!validator.isEmail(value)) {
-          throw new Error("invalid email address:" + value);
+          throw new Error("Invalid email address: " + value);
         }
       },
     },
@@ -50,34 +51,22 @@ const doctorSchema = new mongoose.Schema(
       required: true,
       validate(value) {
         if (!validator.isStrongPassword(value)) {
-          throw new Error("Enter Strong Password..:" + value);
+          throw new Error("Enter strong password: " + value);
         }
       },
-    },
-    gender: {
-      type: String,
-      validate(value) {
-        if (!["male", "female", "others"].includes(value)) {
-          throw new Error("Gender data is not valid...");
-        }
-      },
-    },
-    role: {
-      type: String,
-      enum: ["doctor"],
-      default: "doctor",
-    },
-    registrationNumber: {
-      type: String,
-      // required: true,
     },
 
-    speciality: {
-      type: String,
-    },
+    // Contact & Professional Info
     phone: {
       type: String,
       trim: true,
+    },
+    registrationNumber: {
+      type: String,
+      unique: true,
+    },
+    speciality: {
+      type: String,
     },
     clinicAddress: {
       type: String,
@@ -93,13 +82,39 @@ const doctorSchema = new mongoose.Schema(
     availableTo: {
       type: String,
     },
+
+    // Role & Status
+    gender: {
+      type: String,
+      validate(value) {
+        if (!["male", "female", "others"].includes(value)) {
+          throw new Error("Gender data is not valid...");
+        }
+      },
+    },
+    role: {
+      type: String,
+      enum: ["doctor"],
+      default: "doctor",
+    },
     status: {
       type: String,
       enum: ["Pending", "Active", "Inactive"],
       default: "Pending",
     },
-    picture: {
+
+    // Optional fields
+    PhotoUrl: {
       type: String,
+      default:
+        "https://www.google.com/search?q=dummmy+image&oq=dummmy+image&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDI2ODBqMGo5qAIAsAIB&sourceid=chrome&ie=UTF-8",
+    },
+    createdBy: {
+      type: String,
+    },
+    appliedAt: {
+      type: Date,
+      default: Date.now,
     },
     creationDate: {
       type: Date,
