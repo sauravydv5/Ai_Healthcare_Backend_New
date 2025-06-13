@@ -51,6 +51,7 @@ const createAppointment = async (req, res) => {
   }
 };
 
+//For doc who see appointement list
 const getAppointmentsList = async (req, res) => {
   // console.log("Doctor from token middleware:", req.user);
 
@@ -76,6 +77,8 @@ const getAppointmentsList = async (req, res) => {
     });
   }
 };
+
+//for patient who see whom applied for appointment
 const getMyAppointments = async (req, res) => {
   try {
     const patientId = req.user._id;
@@ -95,7 +98,7 @@ const getMyAppointments = async (req, res) => {
   }
 };
 
-//Reject or accept
+//Reject or accept by doctor
 const updateAppointmentStatus = async (req, res) => {
   try {
     const doctorId = req.user._id;
@@ -177,7 +180,6 @@ const submitDiagnosis = async (req, res) => {
 };
 
 //GET diagonis resultr from patient..
-
 const getCompletedAppointmentsWithDiagnosis = async (req, res) => {
   try {
     const patientId = req.patient._id;
@@ -246,7 +248,6 @@ const getDoctorHistory = async (req, res) => {
         diagnosedAppointments,
         uniquePatientCount: uniquePatients.length,
         profileUpdates,
-        feedbacks, // Optional
       },
     });
   } catch (err) {
@@ -281,5 +282,4 @@ module.exports = {
   getCompletedAppointmentsWithDiagnosis,
   getDoctorHistory,
   deleteMyAppointment,
-  // giveFeedback,
 };
