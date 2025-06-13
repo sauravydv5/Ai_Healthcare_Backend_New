@@ -75,8 +75,6 @@ const patientLogin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
-module.exports = { patientLogin };
 const getAppliedDoctors = async (req, res) => {
   try {
     const doctors = await ApplyDoctor.find();
@@ -181,6 +179,42 @@ const editPatientProfile = async (req, res) => {
   }
 };
 
+//save updated patient profile data
+const getUpdatedPatientProfile = async (req, res) => {
+  try {
+    const patientId = req.patient?._id || req.user?._id;
+
+    if (!patientId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized. Please login first.",
+      });
+    }
+
+    const patient = await Patient.findById(patientId).select("-password");
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Patient profile fetched successfully",
+      data: patient,
+    });
+  } catch (error) {
+    console.error("Error fetching patient profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching profile",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   patientSignup,
   patientLogin,
@@ -188,4 +222,5 @@ module.exports = {
   patientLogout,
   viewPatientProfile,
   editPatientProfile,
+  getUpdatedPatientProfile,
 };
