@@ -258,67 +258,21 @@ const getDoctorHistory = async (req, res) => {
   }
 };
 
-// routes/appointments.js or routes/feedback.js
-// POST /appointments/feedback
-// const giveFeedback = async (req, res) => {
-//   try {
-//     const { appointmentId, rating, comment } = req.body;
-//     // const patientId = req.patient._id;
+const deleteMyAppointment = async (req, res) => {
+  try {
+    const appt = await Appointment.findById(req.params.id);
+    if (!appt) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
 
-//     if (!appointmentId || !rating) {
-//       return res
-//         .status(400)
-//         .json({ message: "Appointment ID and rating are required." });
-//     }
+    await appt.deleteOne(); // Or appt.remove()
+    res.status(200).json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    console.error("Delete Appointment Error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
-//     const appointment = await Appointment.findById(appointmentId).populate(
-//       "doctor patient"
-//     );
-
-//     if (!appointment) {
-//       return res.status(404).json({ message: "Appointment not found." });
-//     }
-
-//     if (appointment.status !== "accepted") {
-//       return res
-//         .status(400)
-//         .json({ message: "Feedback allowed only for accepted appointments." });
-//     }
-
-//     if (appointment.patient._id.toString() !== patientId.toString()) {
-//       return res.status(403).json({
-//         message: "Unauthorized to leave feedback for this appointment.",
-//       });
-//     }
-
-//     const existingFeedback = await Feedback.findOne({
-//       appointment: appointmentId,
-//     });
-
-//     if (existingFeedback) {
-//       return res
-//         .status(400)
-//         .json({ message: "Feedback already submitted for this appointment." });
-//     }
-
-//     const newFeedback = new Feedback({
-//       appointment: appointment._id,
-//       // doctor: appointment.doctor._id,
-//       // patient: patientId,
-//       rating,
-//       comment,
-//     });
-
-//     await newFeedback.save();
-
-//     return res
-//       .status(201)
-//       .json({ message: "Feedback submitted successfully", data: newFeedback });
-//   } catch (err) {
-//     console.error("Feedback error:", err.message);
-//     return res.status(500).json({ message: "Server error" });
-//   }
-// };
 module.exports = {
   createAppointment,
   getAppointmentsList,
@@ -327,5 +281,6 @@ module.exports = {
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
   getDoctorHistory,
+  deleteMyAppointment,
   // giveFeedback,
 };

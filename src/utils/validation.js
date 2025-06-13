@@ -22,21 +22,16 @@ const validateSignUpData = (data) => {
 
 const validateEditDoctorProfileData = (req) => {
   const allowedEditFields = [
-    "name",
-    "email",
+    "firstName",
+    "emailId",
     "phone",
-    "speciality",
-    "clinicAddress",
-    "experienceYears",
-    "availableFrom",
-    "availableTo",
-    "qualification",
-    "consultationFee",
-    "languages",
-    "photoUrl",
-    "about",
-    "clinicName",
-    "daysAvailable",
+    "age",
+    "gender",
+    "address",
+    "bloodGroup",
+    "medicalHistory",
+    "emergencyContact",
+    "allergies",
   ];
 
   const isEditAllowed = Object.keys(req.body).every((field) =>
@@ -47,24 +42,22 @@ const validateEditDoctorProfileData = (req) => {
 };
 const validateEditPatientProfileData = (req) => {
   const allowedEditFields = [
-    "name",
-    "email",
+    "firstName",
+    "emailId",
     "phone",
     "age",
     "gender",
     "address",
     "bloodGroup",
     "medicalHistory",
-    "photoUrl",
     "emergencyContact",
     "allergies",
+    // "photoUrl", // optional if added
   ];
 
-  const isEditAllowed = Object.keys(req.body).every((field) =>
+  return Object.keys(req.body).every((field) =>
     allowedEditFields.includes(field)
   );
-
-  return isEditAllowed;
 };
 
 module.exports = {

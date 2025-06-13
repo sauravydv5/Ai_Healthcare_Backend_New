@@ -10,6 +10,7 @@ const {
   viewProfile,
   editProfile,
   updateDoctorProfile,
+  getDoctorsList,
 } = require("../controllers/doctorController");
 
 // Doctor signup
@@ -29,5 +30,8 @@ router.patch("/profile/edit", doctorAuth, editProfile);
 
 //to see doc updated profile
 router.get("/profile/edit", doctorAuth, updateDoctorProfile);
+
+// get doctors list
+router.get("/list", getDoctorsList);
 
 module.exports = router;
