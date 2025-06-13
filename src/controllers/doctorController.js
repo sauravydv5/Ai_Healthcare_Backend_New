@@ -104,45 +104,21 @@ const viewProfile = async (req, res) => {
 const editProfile = async (req, res) => {
   try {
     const doctor = req.doctor; // Assumes middleware has attached doctor from auth
-
     if (!doctor) {
       return res
         .status(401)
         .json({ success: false, message: "Unauthorized access." });
     }
-
-    const allowedFields = [
-      "name",
-      "email",
-      "phone",
-      "speciality",
-      "clinicAddress",
-      "experienceYears",
-      "availableFrom",
-      "availableTo",
-    ];
-
-    // Update only allowed fields
-    allowedFields.forEach((field) => {
-      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
-        doctor[field] = req.body[field];
+    const doc = await Doctor.findByIdAndUpdate(
+      doctor._id,
+      { ...req.body, status: "Accepted" },
+      {
+        new: true,
       }
-    });
-
-    const updatedDoctor = await doctor.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Profile updated successfully!",
-      data: updatedDoctor,
-    });
+    );
+    res.json(doc);
   } catch (error) {
-    console.error("Error in editProfile:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Something went wrong while updating the profile.",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -164,6 +140,7 @@ const updateDoctorProfile = async (req, res) => {
       experienceYears,
       availableFrom,
       availableTo,
+      photoUrl,
     } = req.body;
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(
@@ -176,6 +153,8 @@ const updateDoctorProfile = async (req, res) => {
         experienceYears,
         availableFrom,
         availableTo,
+        photoUrl,
+        status: "Accepted",
       },
       { new: true }
     );
@@ -194,15 +173,36 @@ const updateDoctorProfile = async (req, res) => {
   }
 };
 
-module.exports = { updateDoctorProfile };
+//to get the list of updated doc whose status was Accepted
+const getDoctorsList = async (req, res) => {
+  try {
+    const acceptedDoctors = await Doctor.find({ status: "Accepted" });
+
+    if (acceptedDoctors.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No accepted doctors found." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      doctors: acceptedDoctors,
+    });
+  } catch (error) {
+    console.error("Error fetching accepted doctors:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 // 👇 Export everything at once
 module.exports = {
   doctorSignup,
   doctorLogin,
-
   doctorLogout,
   viewProfile,
   editProfile,
   updateDoctorProfile,
+  getDoctorsList,
 };
