@@ -104,10 +104,9 @@ const doctorSchema = new mongoose.Schema(
     },
 
     // Optional fields
-    PhotoUrl: {
+    photoUrl: {
       type: String,
-      default:
-        "https://www.google.com/search?q=dummmy+image&oq=dummmy+image&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDI2ODBqMGo5qAIAsAIB&sourceid=chrome&ie=UTF-8",
+      default: "",
     },
     createdBy: {
       type: String,

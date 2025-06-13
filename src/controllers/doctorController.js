@@ -140,6 +140,7 @@ const updateDoctorProfile = async (req, res) => {
       experienceYears,
       availableFrom,
       availableTo,
+      photoUrl,
     } = req.body;
 
     const updatedDoctor = await Doctor.findByIdAndUpdate(
@@ -152,6 +153,7 @@ const updateDoctorProfile = async (req, res) => {
         experienceYears,
         availableFrom,
         availableTo,
+        photoUrl,
         status: "Accepted",
       },
       { new: true }
@@ -198,7 +200,6 @@ const getDoctorsList = async (req, res) => {
 module.exports = {
   doctorSignup,
   doctorLogin,
-
   doctorLogout,
   viewProfile,
   editProfile,

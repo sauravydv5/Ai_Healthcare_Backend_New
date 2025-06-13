@@ -20,6 +20,29 @@ const validateSignUpData = (data) => {
   }
 };
 
+const validateEditDoctorProfileData = (req) => {
+  const allowedEditFields = [
+    "firstName",
+    "emailId",
+    "phone",
+    "age",
+    "gender",
+    "address",
+    "bloodGroup",
+    "medicalHistory",
+    "emergencyContact",
+    "allergies",
+    "photoUrl",
+  ];
+
+  const isEditAllowed = Object.keys(req.body).every((field) =>
+    allowedEditFields.includes(field)
+  );
+
+  return isEditAllowed;
+};
+
+//pPatient Edit Profile
 const validateEditPatientProfileData = (req) => {
   const allowedEditFields = [
     "firstName",
@@ -42,6 +65,6 @@ const validateEditPatientProfileData = (req) => {
 
 module.exports = {
   validateSignUpData,
-
+  validateEditDoctorProfileData,
   validateEditPatientProfileData,
 };
