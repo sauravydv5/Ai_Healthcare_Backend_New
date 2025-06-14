@@ -48,7 +48,6 @@ const doctorSignup = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 const doctorLogin = async (req, res) => {
   try {
     const { emailId, password } = req.body;
@@ -63,9 +62,14 @@ const doctorLogin = async (req, res) => {
       expiresIn: "1d",
     });
 
-    res.cookie("token", token, { httpOnly: true });
+    // ✅ Secure cookie settings for cross-origin support
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000, // optional
+    });
 
-    // 👇 Return doctor info too (omit sensitive fields if needed)
     const { password: _, ...doctorData } = doctor.toObject();
 
     res.json({

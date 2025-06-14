@@ -203,61 +203,57 @@ const getCompletedAppointmentsWithDiagnosis = async (req, res) => {
   }
 };
 
-const getDoctorHistory = async (req, res) => {
-  try {
-    const doctorId = req.doctor._id;
+// For doctor: Get diagnosis + prescription history
 
-    // Appointments
+const getDoctorActivitySummary = async (req, res) => {
+  try {
+    const doctorId = req.doctor?._id || req.user?._id;
+
+    // Total Appointments
     const totalAppointments = await Appointment.countDocuments({
       doctor: doctorId,
     });
+
+    // Accepted
     const acceptedAppointments = await Appointment.countDocuments({
       doctor: doctorId,
       status: "accepted",
     });
+
+    // Rejected
     const rejectedAppointments = await Appointment.countDocuments({
       doctor: doctorId,
       status: "rejected",
     });
+
+    // With diagnosis
     const diagnosedAppointments = await Appointment.countDocuments({
       doctor: doctorId,
-      diagnosis: { $exists: true, $ne: null },
+      status: "accepted",
+      diagnosis: { $ne: null },
+      prescription: { $ne: null },
     });
 
-    // Unique patients
-    const uniquePatients = await Appointment.distinct("patient", {
-      doctor: doctorId,
-    });
-
-    // Doctor profile update count (assume it's stored or you track it manually)
+    // Profile update history (count how many times updated)
     const doctor = await Doctor.findById(doctorId);
-    const profileUpdates = doctor?.profileUpdateCount || 0;
-
-    // Feedback (optional)
-    const feedbacks = await Feedback.find({ doctor: doctorId }).populate(
-      "patient",
-      "firstName lastName"
-    );
+    const profileUpdatedCount = doctor.profileUpdatedCount || 0;
 
     res.status(200).json({
       success: true,
+      message: "Doctor activity summary fetched successfully.",
       data: {
         totalAppointments,
         acceptedAppointments,
         rejectedAppointments,
         diagnosedAppointments,
-        uniquePatientCount: uniquePatients.length,
-        profileUpdates,
+        profileUpdatedCount,
       },
     });
-  } catch (err) {
-    console.error("Doctor history error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch doctor history" });
+  } catch (error) {
+    console.error("Doctor summary fetch error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 const deleteMyAppointment = async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
@@ -280,6 +276,6 @@ module.exports = {
   updateAppointmentStatus,
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
-  getDoctorHistory,
+  getDoctorActivitySummary,
   deleteMyAppointment,
 };

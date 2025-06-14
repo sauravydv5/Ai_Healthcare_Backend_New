@@ -8,7 +8,7 @@ const {
   updateAppointmentStatus,
   submitDiagnosis,
   getCompletedAppointmentsWithDiagnosis,
-  getDoctorHistory,
+  getDoctorActivitySummary,
   deleteMyAppointment,
   // giveFeedback,
 } = require("../controllers/appointmentController");
@@ -23,7 +23,7 @@ router.get("/appointments-list", appointmentAuth, getAppointmentsList);
 router.get("/my-appointments", appointmentAuth, getMyAppointments);
 
 router.patch("/updateStatus/:id", appointmentAuth, updateAppointmentStatus);
-router.get("/history", appointmentAuth, getDoctorHistory);
+router.get("/history", appointmentAuth, getDoctorActivitySummary);
 router.delete("/delete", appointmentAuth, deleteMyAppointment);
 // router.get("/feedback", appointmentAuth, giveFeedback);
 
