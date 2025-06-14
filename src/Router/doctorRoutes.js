@@ -11,6 +11,7 @@ const {
   editProfile,
   updateDoctorProfile,
   getDoctorsList,
+  getDoctorProfileById,
 } = require("../controllers/doctorController");
 
 // Doctor signup
@@ -30,6 +31,8 @@ router.patch("/profile/edit", doctorAuth, editProfile);
 
 //to see doc updated profile
 router.get("/profile/edit", doctorAuth, updateDoctorProfile);
+//to see doc  profile by id
+router.get("/profile/:id", getDoctorProfileById);
 
 // get doctors list
 router.get("/list", getDoctorsList);

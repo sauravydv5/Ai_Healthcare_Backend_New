@@ -87,21 +87,56 @@ const doctorLogout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
+// const viewProfile = async (req, res) => {
+//   try {
+//     const doctorId = req.doctor?._id || req.user?._id;
+//     if (!doctorId) {
+//       return res.status(401).json({ success: false, message: "Unauthorized" });
+//     }
+//     const doctor = await Doctor.findById(doctorId);
+//     if (!doctor) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Please Login!!" });
+//     }
+//     res.status(200).json({ success: true, data: doctor });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+//Get Doc profile BY id
 const viewProfile = async (req, res) => {
   try {
     const doctorId = req.doctor?._id || req.user?._id;
     if (!doctorId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const doctor = await Doctor.findById(doctorId);
+
+    // Avoid sending sensitive fields like password
+    const doctor = await Doctor.findById(doctorId).select("-password -__v");
+
     if (!doctor) {
       return res
         .status(404)
-        .json({ success: false, message: "Please Login!!" });
+        .json({ success: false, message: "Doctor not found. Please login!" });
     }
+
     res.status(200).json({ success: true, data: doctor });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getDoctorProfileById = async (req, res) => {
+  try {
+    const doctor = await Doctor.findById(req.params.id);
+    if (!doctor) return res.status(404).json({ message: "Doctor not found" });
+
+    res.status(200).json({ doctor });
+  } catch (error) {
+    console.error("Error fetching doctor:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -209,4 +244,5 @@ module.exports = {
   editProfile,
   updateDoctorProfile,
   getDoctorsList,
+  getDoctorProfileById,
 };

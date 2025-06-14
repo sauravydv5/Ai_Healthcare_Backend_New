@@ -205,55 +205,93 @@ const getCompletedAppointmentsWithDiagnosis = async (req, res) => {
 
 // For doctor: Get diagnosis + prescription history
 
+// const getDoctorActivitySummary = async (req, res) => {
+//   try {
+//     const doctorId = req.doctor?._id || req.user?._id;
+
+//     // Total Appointments
+//     const totalAppointments = await Appointment.countDocuments({
+//       doctor: doctorId,
+//     });
+
+//     // Accepted
+//     const acceptedAppointments = await Appointment.countDocuments({
+//       doctor: doctorId,
+//       status: "accepted",
+//     });
+
+//     // Rejected
+//     const rejectedAppointments = await Appointment.countDocuments({
+//       doctor: doctorId,
+//       status: "rejected",
+//     });
+
+//     // With diagnosis
+//     const diagnosedAppointments = await Appointment.countDocuments({
+//       doctor: doctorId,
+//       status: "accepted",
+//       diagnosis: { $ne: null },
+//       prescription: { $ne: null },
+//     });
+
+//     // Profile update history (count how many times updated)
+//     const doctor = await Doctor.findById(doctorId);
+//     const profileUpdatedCount = doctor.profileUpdatedCount || 0;
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Doctor activity summary fetched successfully.",
+//       data: {
+//         totalAppointments,
+//         acceptedAppointments,
+//         rejectedAppointments,
+//         diagnosedAppointments,
+//         profileUpdatedCount,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Doctor summary fetch error:", error);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// };
+
 const getDoctorActivitySummary = async (req, res) => {
   try {
-    const doctorId = req.doctor?._id || req.user?._id;
+    let query = {};
+    if (req.user?.role === "patient") {
+      query.patient = req.user._id;
+    } else if (req.doctor || req.user?.role === "doctor") {
+      query.doctor = req.doctor?._id || req.user._id;
+    } else {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
 
-    // Total Appointments
-    const totalAppointments = await Appointment.countDocuments({
-      doctor: doctorId,
-    });
+    const allAppointments = await Appointment.find(query);
 
-    // Accepted
-    const acceptedAppointments = await Appointment.countDocuments({
-      doctor: doctorId,
-      status: "accepted",
-    });
-
-    // Rejected
-    const rejectedAppointments = await Appointment.countDocuments({
-      doctor: doctorId,
-      status: "rejected",
-    });
-
-    // With diagnosis
-    const diagnosedAppointments = await Appointment.countDocuments({
-      doctor: doctorId,
-      status: "accepted",
-      diagnosis: { $ne: null },
-      prescription: { $ne: null },
-    });
-
-    // Profile update history (count how many times updated)
-    const doctor = await Doctor.findById(doctorId);
-    const profileUpdatedCount = doctor.profileUpdatedCount || 0;
+    const accepted = allAppointments.filter(
+      (a) => a.status === "accepted"
+    ).length;
+    const rejected = allAppointments.filter(
+      (a) => a.status === "rejected"
+    ).length;
+    const diagnosed = allAppointments.filter((a) => a.prescription).length;
 
     res.status(200).json({
       success: true,
-      message: "Doctor activity summary fetched successfully.",
+      message: "History fetched",
       data: {
-        totalAppointments,
-        acceptedAppointments,
-        rejectedAppointments,
-        diagnosedAppointments,
-        profileUpdatedCount,
+        totalAppointments: allAppointments.length,
+        acceptedAppointments: accepted,
+        rejectedAppointments: rejected,
+        diagnosedAppointments: diagnosed,
       },
     });
   } catch (error) {
-    console.error("Doctor summary fetch error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("History fetch error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 const deleteMyAppointment = async (req, res) => {
   try {
     const appt = await Appointment.findById(req.params.id);
