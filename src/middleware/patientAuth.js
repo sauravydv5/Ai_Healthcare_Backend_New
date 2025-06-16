@@ -24,6 +24,9 @@ const jwt = require("jsonwebtoken");
 //   }
 // };
 
+const jwt = require("jsonwebtoken");
+const Patient = require("../models/patientModel"); // Ensure this is correctly imported
+
 const patientAuth = async (req, res, next) => {
   try {
     const token = req.cookies.token;
@@ -32,17 +35,17 @@ const patientAuth = async (req, res, next) => {
       return res.status(401).json({ error: "Please login to continue." });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const doctor = await Patient.findById(decoded.id).select("-password");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "AiDoctor$!23");
+    const patient = await Patient.findById(decoded.id).select("-password");
 
-    if (!doctor) {
-      return res.status(404).json({ error: "Doctor not found" });
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
     }
 
-    req.patient = doctor;
+    req.patient = patient;
     next();
   } catch (error) {
-    console.error("doctorAuth error:", error.message);
+    console.error("patientAuth error:", error.message);
     return res.status(401).json({ error: "Unauthorized access" });
   }
 };
