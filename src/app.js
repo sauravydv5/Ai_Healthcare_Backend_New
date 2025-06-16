@@ -14,7 +14,10 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "aihealthcareassistant.netlify.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://aihealthcareassistant.netlify.app/",
+    ],
     credentials: true,
   })
 );
