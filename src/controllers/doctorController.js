@@ -115,7 +115,6 @@ const doctorLogout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-//Get Doc profile BY id
 const viewProfile = async (req, res) => {
   try {
     const doctorId = req.doctor?._id || req.user?._id;
@@ -138,6 +137,7 @@ const viewProfile = async (req, res) => {
   }
 };
 
+//Get Doc profile BY id
 const getDoctorProfileById = async (req, res) => {
   try {
     const doctor = await Doctor.findById(req.params.id);

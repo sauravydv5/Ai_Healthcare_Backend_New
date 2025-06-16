@@ -4,6 +4,56 @@ const user = require("../models/User");
 const Doctor = require("../models/doctorLogin");
 const Patient = require("../models/patient");
 
+// const createAppointment = async (req, res) => {
+//   try {
+//     const {
+//       name,
+//       doctor,
+//       appointmentDate,
+//       appointmentTime,
+//       reason,
+//       createdBy,
+//     } = req.body;
+
+//     const patientId = req.user._id;
+
+//     // Validate required fields
+//     if (!name || !doctor || !appointmentDate || !appointmentTime || !reason) {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "All fields are required." });
+//     }
+
+//     // Create new appointment document
+//     const newAppointment = new Appointment({
+//       name: name,
+//       patient: patientId,
+//       doctor,
+//       appointmentDate,
+//       appointmentTime,
+//       reason,
+//     });
+
+//     const savedAppointment = await newAppointment.save();
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Appointment booked successfully",
+//       data: savedAppointment,
+//     });
+//   } catch (error) {
+//     console.error("Appointment creation error:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Something went wrong. Please try again.",
+//       error: error.message,
+//     });
+//   }
+// };
+
+//For doc who see appointement list
+
+//NEW CODE
 const createAppointment = async (req, res) => {
   try {
     const {
@@ -15,23 +65,25 @@ const createAppointment = async (req, res) => {
       createdBy,
     } = req.body;
 
-    const patientId = req.user._id;
+    const patientId = req.patient._id; // ✅ Corrected from req.user
 
     // Validate required fields
     if (!name || !doctor || !appointmentDate || !appointmentTime || !reason) {
-      return res
-        .status(400)
-        .json({ success: false, message: "All fields are required." });
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
     }
 
     // Create new appointment document
     const newAppointment = new Appointment({
-      name: name,
+      name,
       patient: patientId,
       doctor,
       appointmentDate,
       appointmentTime,
       reason,
+      createdBy: createdBy || "Patient", // fallback
     });
 
     const savedAppointment = await newAppointment.save();
@@ -51,7 +103,6 @@ const createAppointment = async (req, res) => {
   }
 };
 
-//For doc who see appointement list
 const getAppointmentsList = async (req, res) => {
   // console.log("Doctor from token middleware:", req.user);
 
