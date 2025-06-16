@@ -85,6 +85,7 @@ const patientLogin = async (req, res) => {
   try {
     const { identifier, password } = req.body;
 
+    // Find by email or username
     const patient = await Patient.findOne({
       $or: [{ emailId: identifier }, { username: identifier }],
     });
@@ -93,16 +94,18 @@ const patientLogin = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
+    // Check password
     const isMatch = await bcrypt.compare(password, patient.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // Generate JWT
     const token = jwt.sign({ id: patient._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
-    // Instead of setting cookies, send token in JSON
+    // Send token in response, not as cookie
     res.status(200).json({
       message: "Login successful",
       token,
