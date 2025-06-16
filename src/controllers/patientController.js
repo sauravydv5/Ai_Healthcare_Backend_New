@@ -30,11 +30,61 @@ const patientSignup = async (req, res) => {
   }
 };
 
+// const patientLogin = async (req, res) => {
+//   try {
+//     const { identifier, password } = req.body;
+
+//     // Match emailId or username
+//     const patient = await Patient.findOne({
+//       $or: [{ emailId: identifier }, { username: identifier }],
+//     });
+
+//     if (!patient) {
+//       return res.status(404).json({ message: "Patient not found" });
+//     }
+
+//     // Compare password
+//     const isMatch = await bcrypt.compare(password, patient.password);
+//     if (!isMatch) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+
+//     // Generate JWT token
+//     const token = jwt.sign({ id: patient._id }, process.env.JWT_SECRET, {
+//       expiresIn: "1d",
+//     });
+
+//     res.cookie("token", token, {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "None",
+//       maxAge: 24 * 60 * 60 * 1000, // optional
+//     });
+
+//     // Respond with token and full patient info
+//     res.status(200).json({
+//       message: "Login successful",
+//       token,
+//       user: {
+//         id: patient._id,
+//         name: patient.firstName,
+//         emailId: patient.emailId,
+//         username: patient.username,
+//         phone: patient.phone,
+//         gender: patient.gender,
+//       },
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// };
+
+//NEW CODE
+
 const patientLogin = async (req, res) => {
   try {
     const { identifier, password } = req.body;
 
-    // Match emailId or username
     const patient = await Patient.findOne({
       $or: [{ emailId: identifier }, { username: identifier }],
     });
@@ -43,25 +93,16 @@ const patientLogin = async (req, res) => {
       return res.status(404).json({ message: "Patient not found" });
     }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, patient.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ id: patient._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      maxAge: 24 * 60 * 60 * 1000, // optional
-    });
-
-    // Respond with token and full patient info
+    // Instead of setting cookies, send token in JSON
     res.status(200).json({
       message: "Login successful",
       token,
@@ -78,6 +119,7 @@ const patientLogin = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 const getAppliedDoctors = async (req, res) => {
   try {
     const doctors = await ApplyDoctor.find();
