@@ -32,16 +32,13 @@ const patientAuth = async (req, res, next) => {
       return res.status(401).json({ error: "Please login to continue." });
     }
 
-<<<<<<< HEAD
     const decodedObj = jwt.verify(
       token,
       process.env.JWT_SECRET || "AiDoctor$!23"
     );
     const { id } = decodedObj;
-=======
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const doctor = await Patient.findById(decoded.id).select("-password");
->>>>>>> 40e5d38 (fix : base url)
 
     if (!doctor) {
       return res.status(404).json({ error: "Doctor not found" });
