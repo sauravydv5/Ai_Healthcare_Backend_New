@@ -1,5 +1,5 @@
-// const Patient = require("../models/patient");
-// const jwt = require("jsonwebtoken");
+const Patient = require("../models/patient");
+const jwt = require("jsonwebtoken");
 
 // // const patientAuth = async (req, res, next) => {
 // //   try {
@@ -54,8 +54,8 @@
 
 // NEW CODE
 
-const jwt = require("jsonwebtoken");
-const Patient = require("../models/patientModel");
+// const jwt = require("jsonwebtoken");
+// const Patient = require("../models/patientModel");
 
 const patientAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
