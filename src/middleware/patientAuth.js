@@ -9,10 +9,7 @@ const patientAuth = async (req, res, next) => {
       return res.status(401).send("Please login as patient!");
     }
 
-    const decodedObj = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "AiDoctor$!23"
-    );
+    const decodedObj = jwt.verify(token, process.env.JWT_SECRET);
     const { id } = decodedObj;
 
     const patient = await Patient.findById(id);
