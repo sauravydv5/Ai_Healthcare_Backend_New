@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://aihealthcareassistant.netlify.app/",
+      "https://aihealthcareassistentnew.netlify.app",
     ],
     credentials: true,
   })
