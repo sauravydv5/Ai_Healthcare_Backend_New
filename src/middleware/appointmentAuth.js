@@ -4,15 +4,22 @@ const Patient = require("../models/patient");
 
 const appointmentAuth = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    // ✅ First check Authorization header (Bearer token)
+    const authHeader = req.headers.authorization;
+    const token =
+      authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : null;
 
     if (!token) {
-      return res.status(401).json({ error: "Authentication required" });
+      return res
+        .status(401)
+        .json({ error: "Authentication required (no token)" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "AiDoctor$!23");
 
-    // Try finding user as a doctor first
+    // Try Doctor
     let user = await Doctor.findById(decoded.id);
     if (user) {
       req.doctor = user;
@@ -21,7 +28,7 @@ const appointmentAuth = async (req, res, next) => {
       return next();
     }
 
-    // Try finding user as a patient
+    // Try Patient
     user = await Patient.findById(decoded.id);
     if (user) {
       req.patient = user;
