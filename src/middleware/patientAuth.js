@@ -24,8 +24,8 @@ const jwt = require("jsonwebtoken");
 //   }
 // };
 
-const jwt = require("jsonwebtoken");
-const Patient = require("../models/patientModel"); // Ensure this is correctly imported
+// const jwt = require("jsonwebtoken");
+// const Patient = require("../models/patientModel"); // Ensure this is correctly imported
 
 const patientAuth = async (req, res, next) => {
   try {
