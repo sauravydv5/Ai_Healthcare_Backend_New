@@ -1,4 +1,5 @@
 const axios = require("axios");
+require("dotenv").config();
 
 // List of 133 symptoms (same as model input order)
 const allSymptoms = [
@@ -148,25 +149,16 @@ const checkSymptoms = async (req, res) => {
       });
     }
 
-    // ✅ Convert selected symptoms to 133-length binary vector
     const binaryVector = allSymptoms.map((symptom) =>
       symptoms.includes(symptom) ? 1 : 0
     );
 
-    // 🔍 Log for debugging
-    console.log("🧠 Binary Vector Sample:", binaryVector.slice(0, 10));
+    console.log("📤 Sending symptoms to Flask:", binaryVector.slice(0, 10));
 
-    // 🔁 Send to Flask microservice
-    const response = await axios.post(
-      "https://ai-symptom-cheaker.onrender.com/predict",
-      {
-        symptoms: binaryVector,
-      }
-    );
+    const response = await axios.post(`${process.env.FLASK_API_URL}/predict`, {
+      symptoms: binaryVector,
+    });
 
-    console.log("📦 Flask response:", response.data);
-
-    // 🧪 Validate Flask response
     if (!response.data || !response.data.disease) {
       return res.status(500).json({
         success: false,
