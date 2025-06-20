@@ -7,6 +7,7 @@ const doctorRoutes = require("./Router/doctorRoutes");
 const patientRoutes = require("./Router/patientRoutes");
 const appointmentRoutes = require("./Router/appointmentRoute");
 const chatBoatRoute = require("./Router/chatBoatRoute");
+const symptomRoutes = require("./Router/mlRoutes");
 
 require("dotenv").config();
 const app = express();
@@ -30,6 +31,8 @@ app.use("/doctor", doctorRoutes);
 app.use("/patient", patientRoutes);
 app.use("/appointments", appointmentRoutes);
 app.use("/chatbot", chatBoatRoute);
+
+app.use("/api/symptom", symptomRoutes);
 // Start server after DB connection
 connectDB()
   .then(() => {
