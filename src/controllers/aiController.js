@@ -182,4 +182,28 @@ const checkSymptoms = async (req, res) => {
   }
 };
 
-module.exports = { checkSymptoms };
+//PATIENT
+
+const FLASK_APII_URL = "https://ai-medical-recommendation.onrender.com/predict"; // Local Flask URL
+const predictDisease = async (req, res) => {
+  try {
+    const { symptoms } = req.body;
+
+    if (!Array.isArray(symptoms) || symptoms.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Please provide a valid symptoms array." });
+    }
+
+    const response = await axios.post(FLASK_APII_URL, { symptoms });
+
+    res.json(response.data); // Return Flask response as-is
+  } catch (error) {
+    console.error("Error connecting to Flask:", error.message);
+    res
+      .status(500)
+      .json({ error: "Prediction failed", details: error.message });
+  }
+};
+
+module.exports = { checkSymptoms, predictDisease };
