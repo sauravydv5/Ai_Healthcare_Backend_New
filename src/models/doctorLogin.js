@@ -26,7 +26,7 @@ const doctorSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: true,
-      minLength: 4,
+      minLength: 2,
       maxLength: 50,
     },
     lastName: {
